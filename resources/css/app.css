@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+
+@theme {
+    --color-emerald-500: #00AA5B;
+    --color-emerald-600: #039651;
+    --color-emerald-50: #e8f7ee;
+    --color-emerald-100: #d1f0dd;
+    --color-emerald-700: #027a42;
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+[x-cloak] {
+    display: none !important;
+}
