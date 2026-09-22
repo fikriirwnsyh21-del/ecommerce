@@ -20,3 +20,4 @@ ENV SERVER_NAME=:80
 EXPOSE 80
 
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+# Updated for Vercel deployment
