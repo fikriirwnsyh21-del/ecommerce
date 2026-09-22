@@ -1,24 +1,76 @@
+# =========================
+# 1. Build frontend
+# =========================
+FROM node:22-bookworm-slim AS assets
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+
+# =========================
+# 2. Install PHP dependencies
+# =========================
+FROM dunglas/frankenphp:php8.3-bookworm AS vendor
+
+WORKDIR /app
+
+RUN install-php-extensions \
+    zip \
+    pdo_mysql \
+    mbstring \
+    bcmath \
+    intl \
+    opcache
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
+COPY . .
+
+RUN composer dump-autoload --optimize
+
+
+# =========================
+# 3. Production Laravel
+# =========================
 FROM dunglas/frankenphp:php8.3-bookworm
 
 WORKDIR /app
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    bcmath \
+    intl \
+    zip \
+    opcache
 
-COPY . .
+COPY --from=vendor /app/vendor ./vendor
+COPY --from=vendor /app .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+COPY --from=assets /app/public/build ./public/build
+
+COPY Caddyfile /etc/frankenphp/Caddyfile
 
 RUN php artisan storage:link || true
 
-RUN npm install
-RUN npm run build
-
-RUN chown -R www-data:www-data storage bootstrap/cache
-
-ENV SERVER_NAME=:80
+RUN chown -R www-data:www-data \
+    storage \
+    bootstrap/cache
 
 EXPOSE 80
 
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
-# Updated for Vercel deployment
-
+CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
