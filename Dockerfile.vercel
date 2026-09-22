@@ -21,3 +21,4 @@ EXPOSE 80
 
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 # Updated for Vercel deployment
+
